@@ -1,15 +1,16 @@
 #include <SFML/Graphics.h>
 #include <stdio.h>
-
+#include "game_file.c"
 #define WIDTH 1920
 #define HEIGHT 1080
+
 void if_clicked(sfRenderWindow* window, sfEvent event){
     //pos: x 705; y 703
     //pos: x 1210; y 860
     sfVector2i mousePos = sfMouse_getPositionRenderWindow(window);
     if (mousePos.x > 705 && mousePos.x < 1210){
         if (mousePos.y > 705 && mousePos.y < 860){
-            printf("Button pressed");
+            gameCycle(window, event);
         }
     }
 }
@@ -21,18 +22,27 @@ int main()
     sfEvent event;
     sfRenderWindow* window;
     sfTexture *texture = sfTexture_createFromFile("images/menu.png", NULL);
-    sfSprite *sprite = sfSprite_create();
     sfTexture *texture1 = sfTexture_createFromFile("images/start.png", NULL);
+    sfTexture *texture2 = sfTexture_createFromFile("images/tyagi1.png", NULL);
+
+    sfSprite *sprite = sfSprite_create();
     sfSprite *startButton = sfSprite_create();
+    sfSprite *name = sfSprite_create();
+
     sfVector2f scale = {1.65, 1.7};
     sfVector2f scaleButton = {0.4, 0.4};
     sfVector2f posButton = {(WIDTH-1310*0.4) /2 , 700};
+    sfVector2f posName = {300 , 100};
 
     sfSprite_setTexture(sprite, texture, sfTrue);
-    sfSprite_setScale(sprite, scale);
     sfSprite_setTexture(startButton, texture1, sfTrue);
+    sfSprite_setTexture(name, texture2, sfTrue);
+
+    sfSprite_setScale(sprite, scale);
     sfSprite_setScale(startButton, scaleButton);
+
     sfSprite_setPosition(startButton, posButton);
+    sfSprite_setPosition(name, posName);
     // Создать окно
     window = sfRenderWindow_create(mode, "UnderwaterLife", sfResize | sfClose, NULL);
 
@@ -56,8 +66,10 @@ int main()
         // Очистить окно и залить его черным цветом
 
         sfRenderWindow_clear(window, sfBlack);
+
         sfRenderWindow_drawSprite(window, sprite, NULL);
         sfRenderWindow_drawSprite(window, startButton, NULL);
+        sfRenderWindow_drawSprite(window, name, NULL);
         // Отобразить
         sfRenderWindow_display(window);
     }
