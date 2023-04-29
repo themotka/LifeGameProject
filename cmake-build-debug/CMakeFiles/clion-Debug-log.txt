@@ -1,0 +1,29 @@
+"D:\Programming\CLion 2022.3.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/Programming/CLion 2022.3.2/bin/ninja/win/x64/ninja.exe" -G Ninja -S D:\Programming\Projects\CLionProjects\UnderwaterLife -B D:\Programming\Projects\CLionProjects\UnderwaterLife\cmake-build-debug
+-- The C compiler identification is GNU 11.2.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: D:/Programming/CLion 2022.3.2/bin/mingw/bin/gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+CMake Warning at CMakeLists.txt:7 (find_package):
+  By not providing "FindD:/Programming/Libraries/SFML/include/.cmake" in
+  CMAKE_MODULE_PATH this project has asked CMake to find a package
+  configuration file provided by "D:/Programming/Libraries/SFML/include/",
+  but CMake did not find one.
+
+  Could not find a package configuration file provided by
+  "D:/Programming/Libraries/SFML/include/" with any of the following names:
+
+    D:/Programming/Libraries/SFML/include/Config.cmake
+    d:/programming/libraries/sfml/include/-config.cmake
+
+  Add the installation prefix of "D:/Programming/Libraries/SFML/include/" to
+  CMAKE_PREFIX_PATH or set "D:/Programming/Libraries/SFML/include/_DIR" to a
+  directory containing one of the above files.  If
+  "D:/Programming/Libraries/SFML/include/" provides a separate development
+  package or SDK, be sure it has been installed.
+
+
+-- Configuring done
+-- Generating done
+-- Build files have been written to: D:/Programming/Projects/CLionProjects/UnderwaterLife/cmake-build-debug
