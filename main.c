@@ -1,8 +1,8 @@
 #include <SFML/Graphics.h>
 #include <stdio.h>
 #include "game_file.c"
-#define WIDTH 1920
-#define HEIGHT 1080
+#define WIDTH 1900
+#define HEIGHT 1000
 
 void if_clicked(sfRenderWindow* window, sfEvent event){
     //pos: x 705; y 703
