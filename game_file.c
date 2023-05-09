@@ -35,7 +35,7 @@ void replaceCell(creature* cell1, creature* cell2){
     copyCell(tmp,cell2);
     free(tmp);
 }
-const int cellSize = 120; //размер каждой клетки
+const int cellSize = 20; //размер каждой клетки
 
 creature*** createWorld(){
     time_t t;
@@ -46,13 +46,14 @@ creature*** createWorld(){
         world[i] = (creature**) malloc(sizeof(creature*) * width);
         for (int j = 0; j < width; j++){
             world[i][j] = (creature*) malloc(sizeof(creature));
-            world[i][j]->type = rand() % 4;
-            world[i][j]->isAlive = world[i][j]->type == 0;
+            world[i][j]->type = 0;
+            world[i][j]->isAlive = 0;
         }
     }
     return world;
 }
 void generateWorld(creature*** world){
+    time_t t;
     srand((unsigned) time(&t));
     int maxCreatures = WIDTH * HEIGHT * 0.3 / cellSize / cellSize;
     int planktonNum = maxCreatures / 3, fishNum = maxCreatures / 3, hunterNum = maxCreatures / 3;
@@ -64,7 +65,7 @@ void generateWorld(creature*** world){
             y = rand() % (HEIGHT / cellSize);
         }
         world[y][x]->isAlive = true;
-        world[y][x]->type = 0;
+        world[y][x]->type = 1;
     }
     for (int i = 0; i < fishNum; i++){
         int x = rand() % (WIDTH / cellSize);
@@ -74,7 +75,7 @@ void generateWorld(creature*** world){
             y = rand() % (HEIGHT / cellSize);
         }
         world[y][x]->isAlive = true;
-        world[y][x]->type = 1;
+        world[y][x]->type = 2;
     }
     for (int i = 0; i < hunterNum; i++){
         int x = rand() % (WIDTH / cellSize);
@@ -84,7 +85,7 @@ void generateWorld(creature*** world){
             y = rand() % (HEIGHT / cellSize);
         }
         world[y][x]->isAlive = true;
-        world[y][x]->type = 2;
+        world[y][x]->type = 3;
     }
 }
 
