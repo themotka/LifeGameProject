@@ -16,6 +16,9 @@ void if_clicked(sfRenderWindow* window, sfEvent event){
 }
 int main()
 {
+    creature*** world = createWorld();
+    generateWorld(world);
+    printWorld(world);
     // Режим окна (ширина, высота, глубина цвета)
     sfVideoMode mode = {WIDTH, HEIGHT, 32};
     // События
@@ -66,7 +69,6 @@ int main()
         // Очистить окно и залить его черным цветом
 
         sfRenderWindow_clear(window, sfBlack);
-
         sfRenderWindow_drawSprite(window, sprite, NULL);
         sfRenderWindow_drawSprite(window, startButton, NULL);
         sfRenderWindow_drawSprite(window, name, NULL);
