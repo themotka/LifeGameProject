@@ -7,6 +7,7 @@
 void if_clicked(sfRenderWindow* window, sfEvent event){
     //pos: x 705; y 703
     //pos: x 1210; y 860
+
     sfVector2i mousePos = sfMouse_getPositionRenderWindow(window);
     if (mousePos.x > 705 && mousePos.x < 1210){
         if (mousePos.y > 705 && mousePos.y < 860){
@@ -16,9 +17,6 @@ void if_clicked(sfRenderWindow* window, sfEvent event){
 }
 int main()
 {
-    creature*** world = createWorld();
-    generateWorld(world);
-    printWorld(world);
     // Режим окна (ширина, высота, глубина цвета)
     sfVideoMode mode = {WIDTH, HEIGHT, 32};
     // События

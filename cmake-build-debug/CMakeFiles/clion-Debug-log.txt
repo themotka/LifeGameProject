@@ -1,27 +1,19 @@
 "C:\Program Files\JetBrains\CLion 2023.1.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - MinGW Makefiles" -S C:\Users\lowba\CLionProjects\zalupka -B C:\Users\lowba\CLionProjects\zalupka\cmake-build-debug
--- The C compiler identification is GNU 11.2.0
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Check for working C compiler: C:/Program Files/JetBrains/CLion 2023.1.2/bin/mingw/bin/gcc.exe - skipped
--- Detecting C compile features
--- Detecting C compile features - done
 CMake Warning at CMakeLists.txt:7 (find_package):
-  By not providing "FindD:/Programming/Libraries/SFML/include/.cmake" in
-  CMAKE_MODULE_PATH this project has asked CMake to find a package
-  configuration file provided by "D:/Programming/Libraries/SFML/include/",
-  but CMake did not find one.
+  By not providing "FindC:/SFML-2.5.1/include/.cmake" in CMAKE_MODULE_PATH
+  this project has asked CMake to find a package configuration file provided
+  by "C:/SFML-2.5.1/include/", but CMake did not find one.
 
   Could not find a package configuration file provided by
-  "D:/Programming/Libraries/SFML/include/" with any of the following names:
+  "C:/SFML-2.5.1/include/" with any of the following names:
 
-    D:/Programming/Libraries/SFML/include/Config.cmake
-    d:/programming/libraries/sfml/include/-config.cmake
+    C:/SFML-2.5.1/include/Config.cmake
+    c:/sfml-2.5.1/include/-config.cmake
 
-  Add the installation prefix of "D:/Programming/Libraries/SFML/include/" to
-  CMAKE_PREFIX_PATH or set "D:/Programming/Libraries/SFML/include/_DIR" to a
-  directory containing one of the above files.  If
-  "D:/Programming/Libraries/SFML/include/" provides a separate development
-  package or SDK, be sure it has been installed.
+  Add the installation prefix of "C:/SFML-2.5.1/include/" to
+  CMAKE_PREFIX_PATH or set "C:/SFML-2.5.1/include/_DIR" to a directory
+  containing one of the above files.  If "C:/SFML-2.5.1/include/" provides a
+  separate development package or SDK, be sure it has been installed.
 
 
 -- Configuring done
