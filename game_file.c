@@ -6,10 +6,10 @@
 #include<unistd.h>
 #define WIDTH 1900
 #define HEIGHT 1000
-#define FISH_IN_BEGINNING 1900
+
 #define LIFE_EXPECTANCY_PLANKTON 3
 #define LIFE_EXPECTANCY_FISH 4
-#define LIFE_EXPECTANCY_HUNTERS 0
+#define LIFE_EXPECTANCY_HUNTERS 7
 enum CreatureType{
     Empty,
     Plankton,
@@ -19,6 +19,7 @@ enum CreatureType{
 const int cellSize = 10; //размер каждой клетки
 const  int n = HEIGHT / cellSize;
 const int m = WIDTH / cellSize;
+const int FISH_IN_BEGINNING = n * m * 0.1;
 typedef struct //примерная структура существа
 {
     int lifeExpactancy; // количество доступных итераций
@@ -68,7 +69,7 @@ creature*** createWorld(){
 void generateWorld(creature*** world){
     srand(time(NULL));
     int maxCreatures = WIDTH * HEIGHT * 0.3 / cellSize / cellSize;
-    int planktonNum = maxCreatures / 3, fishNum = maxCreatures / 3, hunterNum = maxCreatures / 3;
+    int planktonNum = maxCreatures / 3, fishNum = maxCreatures / 3, hunterNum = maxCreatures / 10;
     for (int i = 0; i < planktonNum; i++){
         int x = rand() % m;
         int y = rand() % n;
@@ -170,21 +171,22 @@ int findPlankton(creature*** world, int i, int j){
     for (int k = i - 1; k <= i + 1; k++){
         for (int g = j - 1; g <= j + 1; g++){
             int newI = per(k, n), newJ = per(g, m);
-            if(world[newI][newJ]->isAlive == true && world[newI][newJ]->type == Plankton){
+            if(world[newI][newJ]->type == Plankton){
                 allPlankton[numP++] = newI*m + newJ;
             }
         }
     }
     return numP == 0 ? -1 : (allPlankton[rand() % numP]);
 }
+//ищем рыбу для хищников, если ее нет, то возвращаем -1
 int findFish(creature*** world, int i, int j){
     //srand(time(NULL));
-    int allFish[8];
+    int allFish[25];
     int numFish = 0;
-    for (int k = i - 1; k <= i + 1; k++){
-        for (int g = j - 1; g <= j + 1; g++){
+    for (int k = i - 2; k <= i + 2; k++){
+        for (int g = j - 2; g <= j + 2; g++){
             int newI = per(k, n), newJ = per(g, m);
-            if(world[newI][newJ]->isAlive == true && world[newI][newJ]->type == Fish){
+            if(world[newI][newJ]->type == Fish){
                 allFish[numFish++] = newI*m + newJ;
             }
         }
@@ -192,13 +194,11 @@ int findFish(creature*** world, int i, int j){
     return numFish == 0 ? -1 : (allFish[rand() % numFish]);
 }
 
-int getRandomPosition(creature *** world, int i, int j){
+int getRandomPosition(int i, int j, int range){
     //srand(time(NULL));
-    int vertical = rand() % 3 - 1, horizontal = rand() % 3 - 1;
+    int vertical = rand() % (range * 2 + 1) - range, horizontal = rand() % (range * 2 + 1) - range;
     int newI = per(i - vertical, n), newJ = per(j - horizontal, m);
-    if (!world[newI][newJ]->isAlive)
-        return newI * m + newJ;
-    return -1;
+    return newI * m + newJ;
 }
 int min(int a, int b){
     return a < b ? a : b;
@@ -215,27 +215,28 @@ void update(creature*** world, int countPlankton, int countFishes, int countHunt
     freeToWalk(world);
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < m; j++) {
-            if (world[i][j]->lifeExpactancy <= 0) {
-                freeCell(world[i][j]);
+            creature* currentCreature = world[i][j];
+            if (currentCreature->lifeExpactancy <= 0) {
+                freeCell(currentCreature);
                 continue;
             }
-            if (world[i][j]->alreadyWalked)
+            if (currentCreature->alreadyWalked)
                 continue;
-            enum CreatureType type = world[i][j]->type;
-            world[i][j]->alreadyWalked = true;
+            enum CreatureType type = currentCreature->type;
+            currentCreature->alreadyWalked = true;
             switch (type) {
                 case Plankton: {
                     int vertical = rand() % 3 - 1, horizontal = rand() % 3 - 1;
                     //движение мха
-                    if (!world[per(i - vertical, n)][per(j - horizontal, m)]->isAlive && world[i][j]->lifeExpactancy > 1){
-                        world[i][j]->lifeExpactancy--;
-                        replaceCell(world[i][j], world[per(i - vertical, n)][per(j - horizontal, m)]);
+                    if (!world[per(i - vertical, n)][per(j - horizontal, m)]->isAlive && currentCreature->lifeExpactancy > 1){
+                        currentCreature->lifeExpactancy--;
+                        replaceCell(currentCreature, world[per(i - vertical, n)][per(j - horizontal, m)]);
                     }
                     //размножение
-                    else if (!world[per(i - vertical, n)][per(j - horizontal, m)]->isAlive && world[i][j]->lifeExpactancy == 1) {
-                        copyCell(world[i][j], world[per(i - vertical, n)][per(j - horizontal, m)]);
+                    else if (!world[per(i - vertical, n)][per(j - horizontal, m)]->isAlive && currentCreature->lifeExpactancy == 1) {
+                        copyCell(currentCreature, world[per(i - vertical, n)][per(j - horizontal, m)]);
                         world[per(i - vertical, n)][per(j - horizontal, m)]->lifeExpactancy = LIFE_EXPECTANCY_PLANKTON;
-                        world[i][j]->lifeExpactancy = LIFE_EXPECTANCY_PLANKTON;
+                        currentCreature->lifeExpactancy = LIFE_EXPECTANCY_PLANKTON;
                     }
                     break;
                 }
@@ -243,75 +244,96 @@ void update(creature*** world, int countPlankton, int countFishes, int countHunt
                     int whatAboutPlankton = findPlankton(world, i, j), whatAboutHunter = findHunter(world, i, j);
                     int newI, newJ;
                     //размножение рыбы
-                    bool shouldSpawn = (rand() % countFishes) < FISH_IN_BEGINNING * 0.1;
+                    bool shouldSpawn = (rand() % countFishes) < FISH_IN_BEGINNING * 0.2;
                     if (shouldSpawn){
-                        int pos = getRandomPosition(world, i, j);
-                        pos = pos == - 1 ? whatAboutPlankton : pos;
+                        int pos = getRandomPosition(i, j, 1);
+                        pos = world[pos / m][pos % m]->isAlive ? whatAboutPlankton : pos;
                         if (pos >= 0) {
-                            world[i][j]->lifeExpactancy += world[pos / m][pos % m]->type == 1 ? 1 : -1;
-                            copyCell(world[i][j], world[pos / m][pos % m]);
+                            currentCreature->lifeExpactancy += world[pos / m][pos % m]->type == Plankton ? 1 : -1;
+                            copyCell(currentCreature, world[pos / m][pos % m]);
                             continue;
                         }
                     }
                     //если жить еще долго, то сначала убегаем от хищинков и при возможности едим
-                    if (world[i][j]->lifeExpactancy > 2) {
+                    if (currentCreature->lifeExpactancy > 2) {
                         if (whatAboutHunter == -1) {//рядом нет хищников
                             if (whatAboutPlankton == -1) {//еды рядом нет, двигаемся в случайную сторону
-                                int newRandomPos = getRandomPosition(world, i, j);
-                                if (newRandomPos != -1) {
-                                    newI = newRandomPos / m;
-                                    newJ = newRandomPos % m;
-                                    world[i][j]->lifeExpactancy--;
-                                    replaceCell(world[i][j], world[newI][newJ]);
-                                    freeCell(world[i][j]);
+                                int newRandomPos = getRandomPosition(i, j, 1);
+                                newI = newRandomPos / m;
+                                newJ = newRandomPos % m;
+                                if (!world[newI][newJ]->isAlive) {
+                                    currentCreature->lifeExpactancy--;
+                                    replaceCell(currentCreature, world[newI][newJ]);
                                 }
 
                             } else {//занимаем место планктона и едим его
                                 newI = whatAboutPlankton / m, newJ = whatAboutPlankton % m;
-                                world[i][j]->lifeExpactancy--;
-                                world[i][j]->lifeExpactancy = min(world[i][j]->lifeExpactancy + 2, LIFE_EXPECTANCY_FISH);
-                                replaceCell(world[i][j], world[newI][newJ]);
-                                freeCell(world[i][j]);
+                                currentCreature->lifeExpactancy--;
+                                currentCreature->lifeExpactancy = min(currentCreature->lifeExpactancy + 2, LIFE_EXPECTANCY_FISH);
+                                replaceCell(currentCreature, world[newI][newJ]);
+                                freeCell(currentCreature);
                             }
                         } else if (whatAboutHunter > -2) {//рядом есть хищники, убегаем (а лучше едим в это время планктона)
                             newI = whatAboutHunter / m, newJ = whatAboutHunter % m;
-                            world[i][j]->lifeExpactancy--;
+                            currentCreature->lifeExpactancy--;
                             if (world[newI][newJ]->isAlive) {
-                                world[i][j]->lifeExpactancy = min(world[i][j]->lifeExpactancy + 2, LIFE_EXPECTANCY_FISH);
-                                replaceCell(world[i][j], world[newI][newJ]);
-                                freeCell(world[i][j]);
-                            } else replaceCell(world[i][j], world[newI][newJ]);
+                                currentCreature->lifeExpactancy = min(currentCreature->lifeExpactancy + 2, LIFE_EXPECTANCY_FISH);
+                                replaceCell(currentCreature, world[newI][newJ]);
+                                freeCell(currentCreature);
+                            } else replaceCell(currentCreature, world[newI][newJ]);
                         }
                     } else {//скоро умрем, надо есть
                         newI = whatAboutHunter / m, newJ = whatAboutHunter % m;
-                        if (whatAboutHunter >= 0 && world[newI][newJ]->type == 1) {//если есть хищники, и можно убегая поесть, just do it
-                            world[i][j]->lifeExpactancy--;
-                            world[i][j]->lifeExpactancy = min(world[i][j]->lifeExpactancy + 2, LIFE_EXPECTANCY_FISH);
-                            replaceCell(world[i][j], world[newI][newJ]);
-                            freeCell(world[i][j]);
+                        if (whatAboutHunter >= 0 && world[newI][newJ]->type == Plankton) {//если есть хищники, и можно убегая поесть, just do it
+                            currentCreature->lifeExpactancy--;
+                            currentCreature->lifeExpactancy = min(currentCreature->lifeExpactancy + 2, LIFE_EXPECTANCY_FISH);
+                            replaceCell(currentCreature, world[newI][newJ]);
+                            freeCell(currentCreature);
                         } else if (whatAboutHunter == -1 && whatAboutPlankton != -1) {//нет хищников, еда есть, едим
-                            world[i][j]->lifeExpactancy--;
+                            currentCreature->lifeExpactancy--;
                             newI = whatAboutPlankton / m, newJ = whatAboutPlankton % m;
-                            world[i][j]->lifeExpactancy = min(world[i][j]->lifeExpactancy + 2, LIFE_EXPECTANCY_FISH);
-                            replaceCell(world[i][j], world[newI][newJ]);
-                            freeCell(world[i][j]);
+                            currentCreature->lifeExpactancy = min(currentCreature->lifeExpactancy + 2, LIFE_EXPECTANCY_FISH);
+                            replaceCell(currentCreature, world[newI][newJ]);
+                            freeCell(currentCreature);
                         } else if (whatAboutHunter == -1) {//нет нихщников, нет еды, рандомно ходим
-                            world[i][j]->lifeExpactancy--;
-                            int newRandomPos = getRandomPosition(world, i, j);
-                            if (newRandomPos != -1) {
-                                newI = newRandomPos / m;
-                                newJ = newRandomPos % m;
-                                replaceCell(world[i][j], world[newI][newJ]);
+                            currentCreature->lifeExpactancy--;
+                            int newRandomPos = getRandomPosition(i, j, 1);
+                            newI = newRandomPos / m;
+                            newJ = newRandomPos % m;
+                            if (!world[newI][newJ]->isAlive) {
+                                replaceCell(currentCreature, world[newI][newJ]);
                             }
 
                         }//иначе стоим на месте
-                        else world[i][j]->lifeExpactancy--;// мб забалансит рыб
+                        else currentCreature->lifeExpactancy--;// мб забалансит рыб
 
                     }
                     break;
                 }
                 case Hunter: {
-
+                    //размножение
+                    bool shouldSpawn = (rand() % countHunters) < FISH_IN_BEGINNING * 0.05;
+                    if (shouldSpawn){
+                        int pos = getRandomPosition(i, j, 1);
+                        if (world[pos / m][pos % m]->type != Hunter) {
+                            currentCreature->lifeExpactancy += world[pos / m][pos % m]->type == Fish ? 1 : -1;
+                            copyCell(currentCreature, world[pos / m][pos % m]);
+                            continue;
+                        }
+                    }
+                    //охота
+                    //либо съедает рыбу, либо меняется местами с рандомной незанятой ячейкой в радиусе 2 клеток
+                    int whatAboutFish = findFish(world, i, j);
+                    if (whatAboutFish >= 0){
+                        currentCreature->lifeExpactancy = min(LIFE_EXPECTANCY_HUNTERS, currentCreature->lifeExpactancy + 2);
+                        replaceCell(currentCreature, world[whatAboutFish / m][whatAboutFish % m]);
+                        freeCell(currentCreature);
+                    }
+                    else{
+                        int pos = getRandomPosition(i, j, 2);
+                        currentCreature->lifeExpactancy--;
+                        replaceCell(currentCreature, world[pos / m][pos % m]);
+                    }
                     break;
                 }
             }
