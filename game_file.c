@@ -10,15 +10,20 @@
 #define LIFE_EXPECTANCY_PLANKTON 3
 #define LIFE_EXPECTANCY_FISH 4
 #define LIFE_EXPECTANCY_HUNTERS 0
-
-const int cellSize = 15; //размер каждой клетки
+enum CreatureType{
+    Empty,
+    Plankton,
+    Fish,
+    Hunter
+};
+const int cellSize = 10; //размер каждой клетки
 const  int n = HEIGHT / cellSize;
 const int m = WIDTH / cellSize;
 typedef struct //примерная структура существа
 {
     int lifeExpactancy; // количество доступных итераций
     bool isAlive;
-    unsigned char type; // планктон/рыба1/рыба2
+    enum CreatureType type; // планктон/рыба1/рыба2
     //bool isHungry;
     int speed;
     bool alreadyWalked;
@@ -34,9 +39,9 @@ void copyCell(creature* src, creature* dist){
 
 void freeCell(creature* cell){
     cell->isAlive = false;
-    cell->type = 0;
+    cell->type = Empty;
     cell->lifeExpactancy = 0;
-    cell->alreadyWalked = 0;
+    cell->alreadyWalked = false;
 }
 
 void replaceCell(creature* cell1, creature* cell2){
@@ -67,34 +72,34 @@ void generateWorld(creature*** world){
     for (int i = 0; i < planktonNum; i++){
         int x = rand() % m;
         int y = rand() % n;
-        while (world[y][x]->isAlive == true){
+        while (world[y][x]->isAlive){
             x = rand() % m;
             y = rand() % n;
         }
         world[y][x]->isAlive = true;
-        world[y][x]->type = 1;
+        world[y][x]->type = Plankton;
         world[y][x]->lifeExpactancy = LIFE_EXPECTANCY_PLANKTON;
     }
     for (int i = 0; i < fishNum; i++){
         int x = rand() % m;
         int y = rand() % n;
-        while (world[y][x]->isAlive  == true){
+        while (world[y][x]->isAlive){
             x = rand() % m;
             y = rand() % n;
         }
         world[y][x]->isAlive = true;
-        world[y][x]->type = 2;
+        world[y][x]->type = Fish;
         world[y][x]->lifeExpactancy = LIFE_EXPECTANCY_FISH;
     }
     for (int i = 0; i < hunterNum; i++){
         int x = rand() % m;
         int y = rand() % n;
-        while (world[y][x]->isAlive  == true){
+        while (world[y][x]->isAlive){
             x = rand() % m;
             y = rand() % n;
         }
         world[y][x]->isAlive = true;
-        world[y][x]->type = 3;
+        world[y][x]->type = Hunter;
         world[y][x]->lifeExpactancy = LIFE_EXPECTANCY_HUNTERS;
 
     }
@@ -110,7 +115,7 @@ void printWorld(creature*** world){
 }
 
 
-int countCreatures(creature*** world, int type){
+int countCreatures(creature*** world, enum CreatureType type){
     int count = 0;
     for (int i = 0; i < n; i++){
         for (int j = 0; j < m; j++)
@@ -133,7 +138,7 @@ int findHunter(creature*** world, int i, int j){
     for (int k = i - 2; k <= i + 2; k++){
         for (int g = j - 2; g <= j + 2; g++){
             int newI = per(k, n), newJ = per(g, m);
-            if(world[newI][newJ]->isAlive == true && world[newI][newJ]->type == 3){
+            if(world[newI][newJ]->isAlive == true && world[newI][newJ]->type == Hunter){
                 allHunters[numHunters++] = newI*m + newJ;
             }
         }
@@ -149,11 +154,11 @@ int findHunter(creature*** world, int i, int j){
     int deltaJ =  ( j - sum % m) / abs((j - sum % m));
     midI = per(i + deltaI, n);
     midJ = per(j + deltaJ, m);
-    if (!world[midI][midJ]->isAlive || world[midI][midJ]->type == 1)
+    if (!world[midI][midJ]->isAlive || world[midI][midJ]->type == Plankton)
         return midI * m + midJ;
-    else if (!world[per(midI - deltaI, n)][midJ]->isAlive || world[per(midI - deltaI, n)][midJ]->type == 1)
+    else if (!world[per(midI - deltaI, n)][midJ]->isAlive || world[per(midI - deltaI, n)][midJ]->type == Plankton)
         return per(midI - deltaI, n) * m + midJ;
-    else if (!world[midI][per(midJ - deltaJ, m)]->isAlive || world[midI][per(midJ - deltaJ, m)]->type == 1)
+    else if (!world[midI][per(midJ - deltaJ, m)]->isAlive || world[midI][per(midJ - deltaJ, m)]->type == Plankton)
         return midI * m + per(midJ - deltaJ, m);
     return -2; // некуда идти, рыба окружена хочу фикса
 }
@@ -165,12 +170,26 @@ int findPlankton(creature*** world, int i, int j){
     for (int k = i - 1; k <= i + 1; k++){
         for (int g = j - 1; g <= j + 1; g++){
             int newI = per(k, n), newJ = per(g, m);
-            if(world[newI][newJ]->isAlive == true && world[newI][newJ]->type == 1){
+            if(world[newI][newJ]->isAlive == true && world[newI][newJ]->type == Plankton){
                 allPlankton[numP++] = newI*m + newJ;
             }
         }
     }
     return numP == 0 ? -1 : (allPlankton[rand() % numP]);
+}
+int findFish(creature*** world, int i, int j){
+    //srand(time(NULL));
+    int allFish[8];
+    int numFish = 0;
+    for (int k = i - 1; k <= i + 1; k++){
+        for (int g = j - 1; g <= j + 1; g++){
+            int newI = per(k, n), newJ = per(g, m);
+            if(world[newI][newJ]->isAlive == true && world[newI][newJ]->type == Fish){
+                allFish[numFish++] = newI*m + newJ;
+            }
+        }
+    }
+    return numFish == 0 ? -1 : (allFish[rand() % numFish]);
 }
 
 int getRandomPosition(creature *** world, int i, int j){
@@ -202,11 +221,10 @@ void update(creature*** world, int countPlankton, int countFishes, int countHunt
             }
             if (world[i][j]->alreadyWalked)
                 continue;
-            int type = world[i][j]->type;
+            enum CreatureType type = world[i][j]->type;
             world[i][j]->alreadyWalked = true;
-
             switch (type) {
-                case 1: {//для мха
+                case Plankton: {
                     int vertical = rand() % 3 - 1, horizontal = rand() % 3 - 1;
                     //движение мха
                     if (!world[per(i - vertical, n)][per(j - horizontal, m)]->isAlive && world[i][j]->lifeExpactancy > 1){
@@ -221,7 +239,7 @@ void update(creature*** world, int countPlankton, int countFishes, int countHunt
                     }
                     break;
                 }
-               case 2: {//для рыб
+               case Fish: {
                     int whatAboutPlankton = findPlankton(world, i, j), whatAboutHunter = findHunter(world, i, j);
                     int newI, newJ;
                     //размножение рыбы
@@ -292,13 +310,12 @@ void update(creature*** world, int countPlankton, int countFishes, int countHunt
                     }
                     break;
                 }
-                case 3: {//для хищников
+                case Hunter: {
+
                     break;
                 }
             }
 
-            //старение
-            world[i][j]->alreadyWalked = true;
 
         }
     }
@@ -316,23 +333,23 @@ void initWorld(sfRenderWindow *window, sfEvent event, creature*** world){
     sfRectangleShape_setFillColor(cell,sfBlack);
     for(int i = 0; i < WIDTH/cellSize; i++){
         for(int j = 0; j < HEIGHT/cellSize; j++) {
-            int type;
+            enum CreatureType type;
             sfVector2f posCell = {i*cellSize, j* cellSize};
             sfRectangleShape_setPosition(cell, posCell);
-            if (world[j][i]->isAlive == false) type = 0;
+            if (world[j][i]->isAlive == false) type = Empty;
             else type = world[j][i]->type;
             //printf("%d ", world[j][i]->isAlive);
             switch (type){
-                case 0:
+                case Empty:
                     sfRectangleShape_setFillColor(cell,sfWhite);
                     break;
-                case 1:
+                case Plankton:
                     sfRectangleShape_setFillColor(cell,colorPlanqton);
                     break;
-                case 2:
+                case Fish:
                     sfRectangleShape_setFillColor(cell,colorFish1);
                     break;
-                case 3:
+                case Hunter:
                     sfRectangleShape_setFillColor(cell,colorFish2);
                     break;
             }
@@ -353,9 +370,9 @@ void gameCycle(sfRenderWindow *window, sfEvent event) {
         sfRenderWindow_clear(window, sfWhite);
         initWorld(window, event, world);
         sfRenderWindow_display(window);
-        countPlankton = countCreatures(world, 1);
-        countFishes = countCreatures(world, 2);
-        countHunters = countCreatures(world, 3);
+        countPlankton = countCreatures(world, Plankton);
+        countFishes = countCreatures(world, Fish);
+        countHunters = countCreatures(world, Hunter);
         printf("Step: %d, Plankton: %d, Fish: %d, Hunters: %d\n", steps++, countPlankton, countFishes, countHunters);
         usleep(20000);
         update(world, countPlankton, countFishes, countHunters);
